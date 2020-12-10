@@ -7,8 +7,8 @@ Framework is the python 3 compatible audiogame creation toolkit. It combines man
 Note! Some things are still undocumented!
 
 # Requirements
-* Lucia (pip install lucia)
-*synthizer (pip install synthizer)
+* pygame
+* synthizer (pip install synthizer)
 * cytolk (pip install cytolk)
 
 # Credits
@@ -194,6 +194,54 @@ x, y, z
 Example
 tile=my_map.get_tile_at(x=5,y=3,z=0)
 
+
+## Window
+
+Taken from Lucia and adapted for Framework.
+
+###Functions
+
+window.initialize()
+You must call this function at the top of your code. It initializes pygame.
+
+quit()
+Frees pygame.
+
+show_window(title,size)
+Shows a window on the screen. Title and size are optional.
+
+process_events()
+You must call this in your main loop, otherwise the window will become not responding.
+
+key_pressed(key)
+check if a key is pressed or not. E.G. window.key_pressed(window.K_left)
+
+key_released(key)
+check if a key is released or not. E.G. window.key_released(window.K_left)
+
+key_down(key)
+check if a key is being held down or not. E.G. window.key_down(window.K_left)
+
+key_up(key)
+check if a key is not being held down. E.G. window.key_up(window.K_left)
+
+## timer
+Timer class, taken from lucia and adapted for Framework.
+
+### Functions
+timer.restart()
+Restarts the timer back to 0 MS
+
+timer.pause()
+pause a timer.
+
+timer.resume()
+resume a paused timer.
+
+### properties
+
+timer.elapsed
+Set or get the elapsed in MS of the timer.
 
 ## Misc
 dlg(text,callback=None)

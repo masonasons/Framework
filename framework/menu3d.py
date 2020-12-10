@@ -1,9 +1,9 @@
 import pygame
-import lucia
 import time
 from .speech import *
 from .sound3d import *
 from .misc import *
+from .window import *
 menu_object=1
 menu_index=2
 class menu_item3d(object):
@@ -68,7 +68,7 @@ class menu3d(object):
 				s.play()
 
 		while 1:
-			lucia.process_events()
+			process_events()
 			time.sleep(0.005)
 			if self.callback:
 				self.callback(self)
@@ -83,16 +83,16 @@ class menu3d(object):
 			elif key_holding(pygame.K_DOWN) and self.up_and_down==True or key_holding(pygame.K_RIGHT) and self.left_and_right==True:
 				self.cycle(2)
 			elif self.home_and_end:
-				if lucia.key_pressed(pygame.K_HOME):
+				if key_pressed(pygame.K_HOME):
 					self.at_edge=False
 					self.position=0
 					self.speak_item()
-				elif lucia.key_pressed(pygame.K_END):
+				elif key_pressed(pygame.K_END):
 					self.at_edge=False
 					self.position=len(self.items)-1
 					self.speak_item()
 
-			if (lucia.key_pressed(pygame.K_RETURN) and self.select_with_enter or lucia.key_pressed(pygame.K_SPACE) and self.select_with_space) and self.position!=-1:
+			if (key_pressed(pygame.K_RETURN) and self.select_with_enter or key_pressed(pygame.K_SPACE) and self.select_with_space) and self.position!=-1:
 				self.play(self.enter_sound)
 				if self.items[self.position].enabled==True:
 					self.kill_music()
@@ -101,7 +101,7 @@ class menu3d(object):
 					else:
 						return (self.position+1)
 
-			if lucia.key_pressed(pygame.K_ESCAPE):
+			if key_pressed(pygame.K_ESCAPE):
 				self.play(self.escape_sound)
 				self.kill_music()
 				return -1

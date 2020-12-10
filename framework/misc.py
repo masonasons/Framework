@@ -1,9 +1,9 @@
 import pygame
 import math
-import lucia
 import time
 from .sound3d import *
 from .speech import *
+from . import timer, window
 key_holds=[]
 
 class key_hold(object):
@@ -14,10 +14,10 @@ class key_hold(object):
 		self.delay=_delay
 		self.repeat=_repeat
 		self.repeat_time=self.delay
-		self.key_timer=lucia.utils.timer.Timer()
+		self.key_timer=timer.Timer()
 
 	def pressing(self):
-		self.status=lucia.key_down(self.key_code)
+		self.status=window.key_down(self.key_code)
 		if self.status==False:
 			self.repeat_time=0
 			self.key_timer.restart()
@@ -47,12 +47,12 @@ def key_holding(key, delay=500, repeat=50):
 def dlg(text, callback=None):
 	speak(text)
 	while True:
-		lucia.process_events()
+		window.process_events()
 		time.sleep(0.005)
 		if callback: callback
-		if lucia.key_pressed(pygame.K_UP) or lucia.key_pressed(pygame.K_DOWN) or lucia.key_pressed(pygame.K_LEFT) or lucia.key_pressed(pygame.K_RIGHT):
+		if window.key_pressed(pygame.K_UP) or window.key_pressed(pygame.K_DOWN) or window.key_pressed(pygame.K_LEFT) or window.key_pressed(pygame.K_RIGHT):
 			speak(text)
-		if lucia.key_pressed(pygame.K_RETURN) or lucia.key_pressed(pygame.K_ESCAPE):
+		if window.key_pressed(pygame.K_RETURN) or window.key_pressed(pygame.K_ESCAPE):
 			break
 
 def dlg_play(audio, audiotype="sound3d",callback=None, fade=False, fadespeed=30,context=None):
@@ -64,10 +64,10 @@ def dlg_play(audio, audiotype="sound3d",callback=None, fade=False, fadespeed=30,
 	else: return 0
 	dlgaudio.play()
 	while dlgaudio.is_playing():
-		lucia.process_events()
+		window.process_events()
 		time.sleep(0.001)
 		if callback: callback
-		if lucia.key_pressed(pygame.K_RETURN):
+		if window.key_pressed(pygame.K_RETURN):
 			if fade:
 				fade_sound(dlgaudio, -50, fadespeed)
 			dlgaudio.stop()
