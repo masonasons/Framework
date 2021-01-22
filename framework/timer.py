@@ -20,7 +20,7 @@ class Timer:
 	"""
 
 	def __init__(self):
-		self.inittime = time.time()
+		self.inittime = time.perf_counter()
 		self.paused = 0
 
 	@property
@@ -30,7 +30,7 @@ class Timer:
 		if self.paused != 0:
 			return self.paused
 		else:
-			return self._ms(time.time() - self.inittime)
+			return self._ms(time.perf_counter() - self.inittime)
 
 	@elapsed.setter
 	def elapsed(self, amount):
@@ -40,7 +40,7 @@ class Timer:
 			amount (int): The time elapsed (in millis)
 		"""
 		if self.paused == 0:
-			self.inittime = time.time() - (amount / 1000)
+			self.inittime = time.perf_counter() - (amount / 1000)
 		else:
 			self.paused = amount
 
@@ -51,11 +51,11 @@ class Timer:
 
 	def pause(self):
 		"""Pauses the timer at a certain position."""
-		self.paused = self._ms(time.time() - self.inittime)
+		self.paused = self._ms(time.perf_counter() - self.inittime)
 
 	def resume(self):
 		"""Resumes the timer after being paused."""
-		self.inittime = time.time() - (self.paused / 1000)
+		self.inittime = time.perf_counter() - (self.paused / 1000)
 		self.paused = 0
 
 	def _ms(self, t):
