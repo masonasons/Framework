@@ -1,3 +1,4 @@
 fw
 build.bat
 build.py
+*.pyc
