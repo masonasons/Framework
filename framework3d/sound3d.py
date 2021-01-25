@@ -62,6 +62,7 @@ class sound3d(object):
 				self.source = synthizer.PannedSource(self.context)
 		if self.is_active:
 			self.filename=filename
+			self.connected=False
 			return True
 		return False
 
@@ -80,7 +81,10 @@ class sound3d(object):
 		if not self.is_active():
 			return False
 		self.generator.looping=False
-		self.source.add_generator(self.generator)
+		if self.connected==False:
+			self.source.add_generator(self.generator)
+		else:
+			self.source.play()
 		self.paused=False
 		self.looping=False
 		return True
@@ -109,13 +113,13 @@ class sound3d(object):
 	def pause(self):
 		if not self.is_active():
 			return False
-		self.source.remove_generator(self.generator)
+		self.source.pause()
 		self.paused=True
 
 	def stop(self):
 		if not self.is_active():
 			return False
-		self.source.remove_generator(self.generator)
+		self.source.pause()
 		self.generator.position=0
 		self.paused=False
 
