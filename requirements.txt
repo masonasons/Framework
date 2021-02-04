@@ -1,3 +1,4 @@
 synthizer
-cytolk
+git+http://github.com/accessibleapps/accessible_output2
 pygame
+pyperclip

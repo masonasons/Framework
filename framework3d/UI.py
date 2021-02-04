@@ -1,5 +1,4 @@
 import pyperclip
-import lucia
 import platform
 from fw import speech
 
@@ -39,29 +38,29 @@ class VirtualInput:
 				self.callback(self)
 			if self.input_break:
 				break
-			events = lucia.process_events()
+			events = window.process_events()
 			for event in events:
 				if event.type == pygame.KEYDOWN:
-					if event.key == lucia.K_UP:
+					if event.key == pygame.K_UP:
 						self.charindex = 0
 						self._output_char(self.text, True)
-					elif event.key == lucia.K_DOWN:
+					elif event.key == pygame.K_DOWN:
 						self.charindex = len(self.text)
 						self._output_char(self.text, True)
-					elif event.key == lucia.K_HOME:
+					elif event.key == pygame.K_HOME:
 						self.charindex = 0
 						if len(self.text)>0:
 							self._output_char(self.text[0])
-					elif event.key == lucia.K_END:
+					elif event.key == pygame.K_END:
 						self.charindex = len(self.text)
 						speech.speak("Blank")
-					elif event.key == lucia.K_LEFT and len(self.text)>0:
+					elif event.key == pygame.K_LEFT and len(self.text)>0:
 						if self.charindex > 0:
 							self.charindex-=1
 						elif self.charindex <= 0:
 							self.charindex=0
 						self._output_char(self.text[self.charindex])
-					elif event.key == lucia.K_RIGHT and len(self.text)>0:
+					elif event.key == pygame.K_RIGHT and len(self.text)>0:
 						if self.charindex < len(self.text):
 							self.charindex+=1
 							if self.charindex >= len(self.text):
@@ -72,7 +71,7 @@ class VirtualInput:
 								self._output_char(self.text[self.charindex])
 						else:
 							speech.speak("blank")
-					elif event.key == lucia.K_BACKSPACE:
+					elif event.key == pygame.K_BACKSPACE:
 						if len(self.text) == 0 or self.charindex <= 0:
 							continue
 						what = self.text[self.charindex-1]
@@ -84,9 +83,9 @@ class VirtualInput:
 						self.text=temp
 						self.charindex-=1
 						self._output_char(what)
-					elif event.key == lucia.K_RETURN:
+					elif event.key == pygame.K_RETURN:
 						return self.text
-					elif event.key == lucia.K_SPACE:
+					elif event.key == pygame.K_SPACE:
 						if self.charindex < len(self.text):
 							self.text = self.text[:self.charindex] + " " + self.text[self.charindex:]
 							self.charindex += 1
@@ -96,7 +95,7 @@ class VirtualInput:
 						self._output_char(" ")
 					else:
 						try:
-							if event.unicode in self.allowed_characters and lucia.key_down(pygame.K_LCTRL)==False and lucia.key_down(pygame.K_RCTRL)==False:
+							if event.unicode in self.allowed_characters and window.key_down(pygame.K_LCTRL)==False and window.key_down(pygame.K_RCTRL)==False:
 								if self.charindex < len(self.text):
 									self.text = self.text[:self.charindex] + event.unicode + self.text[self.charindex:]
 									self.charindex += 1
@@ -121,8 +120,8 @@ class VirtualInput:
 		speech.speak(to_speak)
 
 def input_callback(input):
-	if lucia.key_down(pygame.K_LCTRL) or lucia.key_down(pygame.K_RCTRL):
-		if lucia.key_pressed(pygame.K_v):
+	if window.key_down(pygame.K_LCTRL) or window.key_down(pygame.K_RCTRL):
+		if window.key_pressed(pygame.K_v):
 			result=pyperclip.paste()
 			input.text = input.text[:input.charindex] + result + input.text[input.charindex:]
 			speech.speak("Pasted")
