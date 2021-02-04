@@ -4,7 +4,6 @@ import os, platform, shutil
 
 import time
 import pygame
-import lucia
 
 from .data import *
 from .map import *
