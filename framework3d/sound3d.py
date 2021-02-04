@@ -1,4 +1,5 @@
-from . import rotation
+import threading
+from . import rotation, timer
 import time
 import math
 import random
@@ -214,9 +215,9 @@ class sound_manager_item(object):
 		self.verb=verb
 		self.looping=looping
 		self.delete=False
-		self.x=x
-		self.y=y
-		self.z=z
+		self.sx=x
+		self.sy=y
+		self.sz=z
 		self.handle=sound3d(type,context)
 		try:
 			result=self.handle.load(filename)
@@ -226,8 +227,63 @@ class sound_manager_item(object):
 		if type=="3d":
 			self.handle.source.position=(self.x,self.y,self.z)
 
+	def is_playing(self):
+		return self.handle.is_playing()
+	playing=property(is_playing)
+
+	def is_active(self):
+		return self.handle.is_active()
+	active=property(is_active)
+
+	def update(self,position):
+		self.handle.source.position=position
+		self.sx, self.sy, self.sz=position
+
+	def set_x(self,x):
+		if self.handle.type!="3d":
+			return
+		self.update((x,self.ey,self.ez))
+
+	def get_x(self):
+		return self.sx
+	x=property(get_x,set_x)
+
+	def set_y(self,y):
+		if self.handle.type!="3d":
+			return
+		self.update((self.ex,y,self.ez))
+
+	def get_y(self):
+		return self.sy
+	y=property(get_y,set_y)
+
+	def set_z(self,z):
+		if self.handle.type!="3d":
+			return
+		self.update((self.ex,self.ey,z))
+
+	def get_z(self):
+		return self.sz
+	z=property(get_z,set_z)
+
+	def get_volume(self):
+		return self.handle.volume
+
+	def set_volume(self,volume):
+		self.handle.volume=volume
+	volume=property(get_volume,set_volume)
+
+	def get_pitch(self):
+		return self.handle.pitch
+
+	def set_pitch(self,pitch):
+		self.handle.pitch=pitch
+	pitch=property(get_pitch,set_pitch)
+
 	def destroy(self):
+		self.handle.stop()
 		self.handle.close()
+		self.handle=None
 
 class sound_manager(object):
 	def __init__(self):
@@ -241,7 +297,17 @@ class sound_manager(object):
 		self.verb=False
 		self.orientation=0
 		self.facing=0
+		self.cleantimer=timer.Timer()
+		self.cleantime=5000
 		self.is_cleaning=False
+		self.thread=threading.Thread(target=self.sound_thread,daemon=True).start()
+
+	def sound_thread(self):
+		time.sleep(0.2)
+		self.update_sounds()
+		if self.cleantimer.elapsed>=self.cleantime:
+			self.cleantimer.restart()
+			self.clean()
 
 	def set_facing(self,facing):
 		self.context.orientation=make_orientation(facing)
@@ -278,7 +344,6 @@ class sound_manager(object):
 	def set_x(self,x):
 		self.ex=x
 		self.context.position=(self.x,self.y,self.z)
-		self.update_sounds()
 
 	def get_x(self):
 		return self.ex
@@ -287,7 +352,6 @@ class sound_manager(object):
 	def set_y(self,y):
 		self.ey=y
 		self.context.position=(self.x,self.y,self.z)
-		self.update_sounds()
 
 	def get_y(self):
 		return self.ey
@@ -296,7 +360,6 @@ class sound_manager(object):
 	def set_z(self,z):
 		self.ez=z
 		self.context.position=(self.x,self.y,self.z)
-		self.update_sounds()
 
 	def get_z(self):
 		return self.ez
@@ -321,7 +384,6 @@ class sound_manager(object):
 		self.sounds.remove(i)
 
 	def play_stationary(self,filename,looping=False,verb=True):
-		self.clean()
 		i=sound_manager_item(filename,looping,"direct",self.context,0,0,0,verb)
 		if i.delete==True:
 			del i
@@ -342,78 +404,35 @@ class sound_manager(object):
 		return self.play_3d(filename,x,y,0,looping,verb)
 
 	def play_3d(self,filename,x,y,z,looping=False,verb=False):
-		self.clean()
 		i=sound_manager_item(filename,looping,"3d",self.context,x,y,z,verb)
 		if i.delete==True:
 			del i
 			return False
 		if self.reverb==True and i.verb==True:
 			self.context.config_route(i.handle.source, self.internal_reverb)
-		if rotation.get_3d_distance(self.x,self.y,self.z,i.x,i.y,i.z)<=self.distance:
-			if looping==False:
-				i.handle.play()
-			else:
-				i.handle.play_looped()
+		if looping==False:
+			i.handle.play()
+		else:
+			i.handle.play_looped()
 		self.sounds.append(i)
 		return i
-
-	def update_1d(self,i,x):
-		return self.update_3d(i,x,0,0)
-
-	def update_2d(self,i,x,y):
-		return self.update_3d(i,x,y,0)
-
-	def update_3d(self,i,x,y,z):
-		self.clean()
-		if i==None or i==0:
-			return False
-		if i.handle.type!="3d":
-			return False
-		i.handle.source.position=(x,y,z)
-		if rotation.get_3d_distance(self.x,self.y,self.z,i.x,i.y,i.z)<=self.distance and i.handle.is_playing()==False:
-			if i.looping==False:
-				i.handle.play()
-			else:
-				i.handle.play_looped()
-		return True
-
-	def update_pan(self,i,pan):
-		self.clean()
-		if i==None or i==0:
-			return False
-		if i.handle.type!="panned":
-			return False
-		i.handle.pan=pan
-		return True
-
-	def update_pitch(self,i,pitch):
-		if i==None or i==0:
-			return False
-		i.handle.pitch=pitch
-		return True
-
-	def update_volume(self,i,volume):
-		if i==None or i==0:
-			return False
-		i.handle.volume=volume
-		return True
 
 	def update_sounds(self):
 		for i in self.sounds:
 			if i.handle.type=="3d":
-				if rotation.get_3d_distance(self.x,self.y,self.z,i.x,i.y,i.z)<=self.distance and i.handle.is_playing()==False:
+				if rotation.get_3d_distance(self.x,self.y,self.z,i.x,i.y,i.z)<=self.distance and i.handle.playing==False:
 					if i.looping==False:
 						i.handle.play()
 					else:
 						i.handle.play_looped()
-				elif rotation.get_3d_distance(i.x,i.y,i.z,self.x,self.y,self.z)>self.distance and i.handle.is_playing()==True:
+				if rotation.get_3d_distance(i.x,i.y,i.z,self.x,self.y,self.z)>self.distance and i.playing==True:
 					i.handle.pause()
 
 	def clean(self):
 		sounds_to_clean=[]
 		for i in self.sounds:
 			if i.looping: continue
-			if not i.handle.is_playing() and not i.handle.paused:
+			if i.handle==None or not i.handle.is_playing() and not i.handle.paused:
 				sounds_to_clean.append(i)
 		for i in sounds_to_clean:
 			i.destroy()
@@ -424,17 +443,3 @@ class sound_manager(object):
 			i.handle.stop()
 			i.destroy()
 		self.sounds=[]
-
-	def destroy_sound(self,i):
-		if i==None or i==0:
-			return False
-		i.handle.stop()
-		time.sleep(0.005)
-		i.destroy()
-		self.sounds.remove(i)
-		return True
-
-	def playing(self,i):
-		if i==None or i==0:
-			return False
-		return i.handle.is_playing()
