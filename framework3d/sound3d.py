@@ -430,7 +430,7 @@ class sound_manager(object):
 						i.handle.play()
 					elif rotation.get_3d_distance(i.x,i.y,i.z,self.x,self.y,self.z)>self.distance and i.handle.is_playing()==True:
 						i.handle.play_looped()
-				else:
+				elif rotation.get_3d_distance(i.x,i.y,i.z,self.x,self.y,self.z)>self.distance and i.handle.is_playing()==True:
 					i.handle.pause()
 
 	def clean(self):
