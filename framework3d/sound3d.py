@@ -3,6 +3,15 @@ import math
 import random
 import synthizer
 synthizer.initialize()
+#Function for degrees from synthizer manual
+
+def deg2rad(angle):
+	return (angle/180.0)*math.pi
+
+def make_orientation(degrees):
+	rad=deg2rad(degrees)
+	return (math.sin(rad), math.cos(rad), 0, 0, 0, 1)
+
 #Sound buffer class, for handling synthizer sound buffers.
 class sound_buffer(object):
 	def __init__(self,filename,buffer):
@@ -231,7 +240,32 @@ class sound_manager(object):
 		self.context=synthizer.Context()
 		self.internal_reverb = synthizer.GlobalFdnReverb(self.context)
 		self.verb=False
+		self.orientation=0
+		self.facing=0
 		self.is_cleaning=False
+
+	def set_facing(self,facing):
+		self.context.orientation=make_orientation(facing)
+		self.orientation=facing
+
+	def get_facing(self):
+		return self.orientation
+
+	facing=property(get_facing,set_facing)
+
+	def set_hrtf(self,hrtf):
+		if hrtf==False:
+			self.context.panner_strategy=self.context.panner_strategy.STEREO
+		else:
+			self.context.panner_strategy=self.context.panner_strategy.HRTF
+
+	def get_hrtf(self):
+		if self.context.panner_strategy==self.context.panner_strategy.STEREO:
+			return False
+		else:
+			return True
+
+	hrtf=property(get_hrtf,set_hrtf)
 
 	def set_x(self,x):
 		self.ex=x
