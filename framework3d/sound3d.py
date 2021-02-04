@@ -186,9 +186,9 @@ class sound3d(object):
 
 	def is_active(self):
 		if self.source!=None:
-			try:
-				pb=self.generator.position
-			except: return False
+#			try:
+#				pb=self.generator.position
+#			except: return False
 			return True
 		return False
 
@@ -315,23 +315,8 @@ class sound_manager(object):
 
 	reverb=property(get_verb,set_verb)
 
-	def get_id(self):
-		id=random.randint(100000000, 999999999)
-		tries=0
-		while self.get_item(id)!=0 and tries<500:
-			id=random.randint(100000000, 999999999)
-			tries+=1
-		if tries>=500: return -1
-		return id
-
-	def get_item(self, id):
-		for i in self.sounds:
-			if id==i.id: return i
-		return 0
-
-	def destroy_sound(self, id):
-		i=self.get_item(id)
-		if i==0: return False
+	def destroy_sound(self, i):
+		if i==None or i==0: return False
 		i.destroy()
 		self.sounds.remove(i)
 
@@ -343,13 +328,12 @@ class sound_manager(object):
 			return False
 		if self.reverb==True and i.verb==True:
 			self.context.config_route(i.handle.source, self.internal_reverb)
-		i.id=self.get_id()
 		if looping==False:
 			i.handle.play()
 		else:
 			i.handle.play_looped()
 		self.sounds.append(i)
-		return i.id
+		return i
 
 	def play_1d(self,filename,x,looping=False,verb=True):
 		return self.play_3d(filename,x,0,0,looping,verb)
@@ -365,25 +349,23 @@ class sound_manager(object):
 			return False
 		if self.reverb==True and i.verb==True:
 			self.context.config_route(i.handle.source, self.internal_reverb)
-		i.id=self.get_id()
 		if rotation.get_3d_distance(self.x,self.y,self.z,i.x,i.y,i.z)<=self.distance:
 			if looping==False:
 				i.handle.play()
 			else:
 				i.handle.play_looped()
 		self.sounds.append(i)
-		return i.id
+		return i
 
-	def update_1d(self,id,x):
-		return self.update_3d(id,x,0,0)
+	def update_1d(self,i,x):
+		return self.update_3d(i,x,0,0)
 
-	def update_2d(self,id,x,y):
-		return self.update_3d(id,x,y,0)
+	def update_2d(self,i,x,y):
+		return self.update_3d(i,x,y,0)
 
-	def update_3d(self,id,x,y,z):
+	def update_3d(self,i,x,y,z):
 		self.clean()
-		i=self.get_item(id)
-		if i==0:
+		if i==None or i==0:
 			return False
 		if i.handle.type!="3d":
 			return False
@@ -395,26 +377,23 @@ class sound_manager(object):
 				i.handle.play_looped()
 		return True
 
-	def update_pan(self,id,pan):
+	def update_pan(self,i,pan):
 		self.clean()
-		i=self.get_item(id)
-		if i==0:
+		if i==None or i==0:
 			return False
 		if i.handle.type!="panned":
 			return False
 		i.handle.pan=pan
 		return True
 
-	def update_pitch(self,id,pitch):
-		i=self.get_item(id)
-		if i==0:
+	def update_pitch(self,i,pitch):
+		if i==None or i==0:
 			return False
 		i.handle.pitch=pitch
 		return True
 
-	def update_volume(self,id,volume):
-		i=self.get_item(id)
-		if i==0:
+	def update_volume(self,i,volume):
+		if i==None or i==0:
 			return False
 		i.handle.volume=volume
 		return True
@@ -446,9 +425,8 @@ class sound_manager(object):
 			i.destroy()
 		self.sounds=[]
 
-	def destroy_sound(self,id):
-		i=self.get_item(id)
-		if i==0:
+	def destroy_sound(self,i):
+		if i==None or i==0:
 			return False
 		i.handle.stop()
 		time.sleep(0.005)
@@ -456,8 +434,7 @@ class sound_manager(object):
 		self.sounds.remove(i)
 		return True
 
-	def playing(self,id):
-		i=self.get_item(id)
-		if i==0:
+	def playing(self,i):
+		if i==None or i==0:
 			return False
 		return i.handle.is_playing()
