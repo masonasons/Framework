@@ -78,6 +78,10 @@ update a sound's position.
 sound_manager.update_3d(slot, sound_x, sound_y, sound_z)
 update a sound's position.
 ### properties
+sound_manager.facing
+The player's facing direction (Orientation), in degrees.
+sound_manager.hrtf
+True or False for HRTF positioning. If false, stereo is used.
 sound_manager.x, sound_manager.y and sound_manager.z.
 Update a listener's position.
 
