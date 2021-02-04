@@ -235,11 +235,16 @@ class sound_manager_item(object):
 			self.handle.source.position=(self.x,self.y,self.z)
 
 	def is_playing(self):
-		return self.handle.is_playing()
+		if self.handle!=None:
+			return self.handle.is_playing()
+		return False
 	playing=property(is_playing)
 
 	def is_active(self):
-		return self.handle.is_active()
+		if self.handle!=None:
+			return self.handle.is_active()
+		return False
+
 	active=property(is_active)
 
 	def update(self,position):
