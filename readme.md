@@ -57,34 +57,37 @@ playing: gets the status of a sound, playing is True.
 a high level class for handling sounds.
 ### Functions:
 sound_manager.play_stationary(filename,looping)
-Play a sound in the center, either one shot or looped. Returns the sound slot for later manipulation.
+Play a sound in the center, either one shot or looped. Returns the sound object for later manipulation.
 sound_manager.play_1d(filename, sound_x, looping)
-Play a sound in a 1 Dementional setting. Returns the slot for later manipulation.
+Play a sound in a 1 Dementional setting. Returns the object for later manipulation.
 sound_manager.play_2d(filename, sound_x, sound_y, looping)
-Play a sound in a 2 Dementional setting. Returns the slot for later manipulation.
+Play a sound in a 2 Dementional setting. Returns the object for later manipulation.
 sound_manager.play_3d(filename, sound_x, sound_y, sound_z, looping)
-Play a sound in a 3 Dementional setting. Returns the slot for later manipulation.
+Play a sound in a 3 Dementional setting. Returns the object for later manipulation.
 
 sound_manager.destroy_all()
 destroy all playing sounds.
-sound_manager.update_sound_volume(slot, volume)
-Update the sound volume.
-sound_manager.update_sound_pitch(slot, pitch)
-Update the sound pitch.
-sound_manager.update_1d(slot, sound_x)
-update a sound's position.
-sound_manager.update_2d(slot, sound_x, sound_y)
-update a sound's position.
-sound_manager.update_3d(slot, sound_x, sound_y, sound_z)
-update a sound's position.
 ### properties
 sound_manager.facing
 The player's facing direction (Orientation), in degrees.
+sound_manager.distance
+the maximum distance from which sounds will be heard
 sound_manager.hrtf
 True or False for HRTF positioning. If false, stereo is used.
 sound_manager.x, sound_manager.y and sound_manager.z.
 Update a listener's position.
 
+
+### SoundManager item properties
+x, y, and z: set the position of the sound.
+pitch, volume
+set the pitch and volume of the sound
+playing, active
+read only properties querying the status of the sound.
+
+### Sound manager item methods
+update(x,y,z)
+update the position of the sound. This is an alternative for setting x, y and Z.
 
 ## Menu
 A class for creating and displaying a menu.
