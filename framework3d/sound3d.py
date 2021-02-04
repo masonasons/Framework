@@ -1,9 +1,11 @@
+import logging
 import threading
 from . import rotation, timer
 import time
 import math
 import random
 import synthizer
+log = logging.getLogger("SoundManager")
 synthizer.initialize()
 #Function for degrees from synthizer manual
 
@@ -77,6 +79,7 @@ class sound3d(object):
 		if self.is_active:
 			self.filename=filename
 			return True
+		log.error("sound "+filename+" failed to load")
 		return False
 
 	def close(self):
@@ -118,6 +121,8 @@ class sound3d(object):
 		return True
 
 	def is_playing(self):
+		if self.paused==True:
+			return False
 		return self.position<=self.length-0.005
 
 	def pause(self):
@@ -168,6 +173,7 @@ class sound3d(object):
 		freq=(float(pitch)/100)
 		if freq>10: freq=10
 		if freq<0.1: freq=0.1
+		log.info("sound "+self.filename+" pitch "+str(freq))
 		self.generator.pitch_bend=freq
 
 	def get_pan(self):
@@ -183,6 +189,7 @@ class sound3d(object):
 			return False
 		if self.type!="panned":
 			return False
+		log.info("sound "+self.filename+" pan "+str(self.source.pan/100))
 		self.source.panning_scalar=pan/100
 
 	def is_active(self):
@@ -287,6 +294,7 @@ class sound_manager_item(object):
 
 class sound_manager(object):
 	def __init__(self):
+		log.info("sound manager created")
 		self.sounds=[]
 		self.ex=0
 		self.ey=0
@@ -303,11 +311,12 @@ class sound_manager(object):
 		self.thread=threading.Thread(target=self.sound_thread,daemon=True).start()
 
 	def sound_thread(self):
-		time.sleep(0.2)
-		self.update_sounds()
-		if self.cleantimer.elapsed>=self.cleantime:
-			self.cleantimer.restart()
-			self.clean()
+		while 1:
+			time.sleep(0.2)
+			self.update_sounds()
+			if self.cleantimer.elapsed>=self.cleantime:
+				self.cleantimer.restart()
+				self.clean()
 
 	def set_facing(self,facing):
 		self.context.orientation=make_orientation(facing)
@@ -330,7 +339,9 @@ class sound_manager(object):
 	def set_hrtf(self,hrtf):
 		if hrtf==False:
 			self.context.panner_strategy=self.context.panner_strategy.STEREO
+			log.info("sound manager HRTF disabled")
 		else:
+			log.info("sound manager HRTF enabled")
 			self.context.panner_strategy=self.context.panner_strategy.HRTF
 
 	def get_hrtf(self):
@@ -369,6 +380,7 @@ class sound_manager(object):
 		return self.verb
 
 	def set_verb(self,verb):
+		log.info("sound manager reverb "+str(verb))
 		self.verb=verb
 		for i in self.sounds:
 			if verb==True and i.verb==True:
@@ -404,28 +416,32 @@ class sound_manager(object):
 		return self.play_3d(filename,x,y,0,looping,verb)
 
 	def play_3d(self,filename,x,y,z,looping=False,verb=False):
+		if rotation.get_3d_distance(self.x,self.y,self.z,x,y,z)>=self.distance and looping==False:
+			return False
 		i=sound_manager_item(filename,looping,"3d",self.context,x,y,z,verb)
 		if i.delete==True:
 			del i
 			return False
 		if self.reverb==True and i.verb==True:
 			self.context.config_route(i.handle.source, self.internal_reverb)
-		if looping==False:
-			i.handle.play()
-		else:
-			i.handle.play_looped()
+		if rotation.get_3d_distance(self.x,self.y,self.z,i.x,i.y,i.z)<=self.distance:
+			if looping==False:
+				i.handle.play()
+			else:
+				i.handle.play_looped()
 		self.sounds.append(i)
 		return i
 
 	def update_sounds(self):
 		for i in self.sounds:
 			if i.handle.type=="3d":
-				if rotation.get_3d_distance(self.x,self.y,self.z,i.x,i.y,i.z)<=self.distance and i.handle.playing==False:
+				if rotation.get_3d_distance(self.x,self.y,self.z,i.x,i.y,i.z)<=self.distance and i.playing==False:
 					if i.looping==False:
 						i.handle.play()
 					else:
 						i.handle.play_looped()
 				if rotation.get_3d_distance(i.x,i.y,i.z,self.x,self.y,self.z)>self.distance and i.playing==True:
+					log.info("sound "+i.handle.filename+" no longer in range, pausing.")
 					i.handle.pause()
 
 	def clean(self):
@@ -434,6 +450,7 @@ class sound_manager(object):
 			if i.looping: continue
 			if i.handle==None or not i.handle.is_playing() and not i.handle.paused:
 				sounds_to_clean.append(i)
+		log.info("sound manager: "+str(len(sounds_to_clean))+" sounds to clean.")
 		for i in sounds_to_clean:
 			i.destroy()
 			self.sounds.remove(i)
