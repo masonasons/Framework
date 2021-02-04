@@ -1,3 +1,4 @@
+from . import rotation
 import time
 import math
 import random
@@ -238,6 +239,7 @@ class sound_manager(object):
 		self.ey=0
 		self.ez=0
 		self.context=synthizer.Context()
+		self.max_distance=100
 		self.internal_reverb = synthizer.GlobalFdnReverb(self.context)
 		self.verb=False
 		self.orientation=0
@@ -252,6 +254,15 @@ class sound_manager(object):
 		return self.orientation
 
 	facing=property(get_facing,set_facing)
+
+	def set_distance(self,distance):
+		self.context.max_distance=distance
+		self.max_distance=distance
+
+	def get_distance(self):
+		return self.max_distance
+
+	distance=property(get_distance,set_distance)
 
 	def set_hrtf(self,hrtf):
 		if hrtf==False:
@@ -270,6 +281,7 @@ class sound_manager(object):
 	def set_x(self,x):
 		self.ex=x
 		self.context.position=(self.x,self.z,self.y)
+		self.update_sounds()
 
 	def get_x(self):
 		return self.ex
@@ -278,6 +290,7 @@ class sound_manager(object):
 	def set_y(self,y):
 		self.ey=y
 		self.context.position=(self.x,self.z,self.y)
+		self.update_sounds()
 
 	def get_y(self):
 		return self.ey
@@ -286,6 +299,7 @@ class sound_manager(object):
 	def set_z(self,z):
 		self.ez=z
 		self.context.position=(self.x,self.z,self.y)
+		self.update_sounds()
 
 	def get_z(self):
 		return self.ez
@@ -355,10 +369,11 @@ class sound_manager(object):
 		if self.reverb==True and i.verb==True:
 			self.context.config_route(i.handle.source, self.internal_reverb)
 		i.id=self.get_id()
-		if looping==False:
-			i.handle.play()
-		else:
-			i.handle.play_looped()
+		if rotation.get_3d_distance(i.x,i.y,i.z,self.x,self.y,self.z)<=self.distance:
+			if looping==False:
+				i.handle.play()
+			else:
+				i.handle.play_looped()
 		self.sounds.append(i)
 		return i.id
 
@@ -376,6 +391,11 @@ class sound_manager(object):
 		if i.handle.type!="3d":
 			return False
 		i.handle.source.position=(x,z,y)
+		if rotation.get_3d_distance(i.x,i.y,i.z,self.x,self.y,self.z)<=self.distance and i.handle.is_playing()==False:
+			if looping==False:
+				i.handle.play()
+			else:
+				i.handle.play_looped()
 		return True
 
 	def update_pan(self,id,pan):
@@ -402,6 +422,17 @@ class sound_manager(object):
 		i.handle.volume=volume
 		return True
 
+	def update_sounds(self):
+		for i in self.sounds:
+			if i.handle.type=="3d":
+				if rotation.get_3d_distance(i.x,i.y,i.z,self.x,self.y,self.z)<=self.distance and i.handle.is_playing()==False:
+					if looping==False:
+						i.handle.play()
+					elif rotation.get_3d_distance(i.x,i.y,i.z,self.x,self.y,self.z)>self.distance and i.handle.is_playing()==True:
+						i.handle.play_looped()
+				else:
+					i.handle.pause()
+
 	def clean(self):
 		sounds_to_clean=[]
 		for i in self.sounds:
@@ -415,10 +446,10 @@ class sound_manager(object):
 	def destroy_all(self):
 		for i in self.sounds:
 			i.handle.stop()
-			time.sleep(0.02)
+			time.sleep(0.005)
 		for i in self.sounds:
 			i.destroy()
-			time.sleep(0.02)
+			time.sleep(0.005)
 			self.sounds.remove(i)
 
 	def destroy_sound(self,id):
@@ -426,7 +457,7 @@ class sound_manager(object):
 		if i==0:
 			return False
 		i.handle.stop()
-		time.sleep(0.02)
+		time.sleep(0.005)
 		i.destroy()
 		self.sounds.remove(i)
 		return True
