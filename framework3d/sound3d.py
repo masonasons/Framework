@@ -256,7 +256,7 @@ class sound_manager(object):
 	facing=property(get_facing,set_facing)
 
 	def set_distance(self,distance):
-		self.context.max_distance=distance
+		self.context.distance_max=distance
 		self.max_distance=distance
 
 	def get_distance(self):
