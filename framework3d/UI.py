@@ -1,6 +1,6 @@
 import pyperclip
 import platform
-from framework3d import speech
+from framework3d import speech, window
 
 import pygame
 import string

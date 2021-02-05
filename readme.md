@@ -14,9 +14,6 @@ Note! Some things are still undocumented!
 # Credits
 This toolkit has been Created by Mason Armstrong. BGT style Sound class and sound manager created initially for Sound_Lib by Carter Temm and continued/adapted to Synthizer by Mason Armstrong. Initial sound_pool class for sound_lib created by Kianoosh and updated/finished by Mason Armstrong. Menu and map classes created by Mason Armstrong. Some code originally part of the AGK and AGK3 packages.
 
-# building/cythonizing
-For this to work, you'll need a c compiler and cython. It is not required to build framework in order to use it. Just run build.bat and it'll spit out pyd fies in a folder called fw.
-
 # What do we have?
 
 ## Classes
